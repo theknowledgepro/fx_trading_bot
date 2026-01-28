@@ -1,0 +1,18 @@
+# Python dependencies
+# pip install -r requirements.txt
+MetaTrader5
+pandas
+numpy
+cryptography
+load_dotenv
+
+# The Strategy Engine - ICT 
+# Quantifiable Entry/Exit Rules
+# Market Regime Detection
+# Robust Risk Management - ability to calc. trade size/lot size on the acct balance, e.g on a single trade must not risk more than 1-2% of the equity 
+# Daily Drawdown Limits - it must not lose more than 5% in 24hrs 
+# Position Sizing: The bot should calculate trade size dynamically based on your account balance and risk per trade (e.g., never risk more than 1-2% of total equity on a single trade 
+# Validation & Backtesting - abilty to backtest
+# What happens if the exchange API goes down? 
+# API keys must be encrypted
+# The bot includes volatility-aware market regime detection and will not trade during statistically low-probability consolidation periods such as the Asian session.

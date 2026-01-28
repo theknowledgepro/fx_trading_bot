@@ -1,0 +1,5 @@
+__pycache__
+.env
+secret.key
+positions.csv
+trades.csv
