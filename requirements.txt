@@ -5,6 +5,8 @@ pandas
 numpy
 cryptography
 load_dotenv
+ta
+pytz
 
 # The Strategy Engine - ICT 
 # Quantifiable Entry/Exit Rules
@@ -16,3 +18,38 @@ load_dotenv
 # What happens if the exchange API goes down? 
 # API keys must be encrypted
 # The bot includes volatility-aware market regime detection and will not trade during statistically low-probability consolidation periods such as the Asian session.
+
+# The "Kill Zone" Filter (Time is Price)
+# ​ICT strategies like the Silver Bullet or London Open are strictly time-bound. If your bot is taking trades at 3:00 PM EST, it’s trading "zombie hour" and will likely lose.
+# ​The Fix: Hard-code "Kill Zones" into your bot.
+# ​London: 2:00 AM – 5:00 AM EST
+# ​New York: 7:00 AM – 10:00 AM EST
+# ​London Close: 10:00 AM – 12:00 PM EST
+# ​Rule: If the current time is outside these windows, the bot should be disabled from opening new trades.
+
+# Risk Management
+# Aim for a Risk-to-Reward ratio of at least 1:1.5 or 1:2.BreakEven with a 40% win rate. 
+# Profitability
+# Trend Filter: Add a 200 EMA (Exponential Moving Average). Only allow Buy trades if the price is above it. Prevents trading against the "Big Picture" trend.
+# Volatility Filter:  Use the ATR (Average True Range) to set your Stop Loss. Adjusts your risk based on how much the market is actually moving.
+# Time Filter: Only allows the bot to trade during high liquidity (e.g., London or New York sessions). Avoids the "dead" hours where spreads are high and movement is random.
+# Spread Protection: Program to skip trades if the broker's spread is too high.
+# Strategy
+ 
+#  High-Timeframe (HTF) Bias
+# ​A common bot error is trading a Fair Value Gap (FVG) on the 1-minute chart while the 4-hour chart is trending aggressively in the opposite direction.
+# ​The Fix: Implement a "Multi-Timeframe Analysis" check.
+# ​The bot must check the 1-hour or 4-hour chart for Market Structure.
+# ​If the 4H trend is Bearish, the bot is only allowed to take Sell signals on the 5-minute chart. Never let it trade against the HTF bias.
+
+# Validating the "Liquidity Sweep"
+# ​Most ICT bots fail because they enter on every FVG they see. In ICT, an FVG is only high-probability if it occurs after liquidity has been taken.
+# ​The Fix: Program a "Liquidity Purge" requirement.
+# ​The bot must identify a Swing High or Swing Low from the previous session (e.g., Asian High/Low).
+# ​Price must "pierce" that level and then rapidly reverse (a Liquidity Sweep).
+# ​Only after this sweep should the bot look for a Market Structure Shift (MSS) and an FVG for entry.
+# ​
+# Refining the Entry Logic (FVG vs. IFVG)
+# ​If your bot is getting "stopped out" frequently, it might be entering too early.
+# ​The Fix: Use the Inversion Fair Value Gap (IFVG) or Breaker Block as a secondary confirmation.
+# ​Wait for price to close past a bearish FVG (turning it into an Inversion Gap) before taking a long. This proves that the "Smart Money" has actually stepped in.
