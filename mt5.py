@@ -134,6 +134,31 @@ class ResilientMT5:
             time.sleep(self.retry_interval)
         raise ConnectionError(f"MT5 positions unavailable for {symbol} after {self.max_retries} retries")
 
+    def safe_position_get_by_ticket(self, ticket: int):
+        """
+        Fetch a single open position by ticket safely.
+        Retries if MT5 API returns None.
+        """
+        retries = 0
+        while retries < self.max_retries:
+            try:
+                positions = mt5.positions_get()
+                if positions is not None:
+                    for pos in positions:
+                        if pos.ticket == ticket:
+                            return pos
+                    return None  # ticket not found
+            except Exception as e:
+                print(f"{datetime.now()} → Error fetching position: {e}")
+
+            retries += 1
+            msg = f"Failed to get position for ticket {ticket} (attempt {retries})"
+            print(f"{datetime.now()} → {msg}")
+            send_alert("MT5 API Position Error", msg)
+            time.sleep(self.retry_interval)
+
+        raise ConnectionError(f"MT5 position unavailable for ticket {ticket} after {self.max_retries} retries")
+
     def safe_history_deals_get(self, utc_from: datetime, utc_to: datetime):
         """
         Safely fetch MT5 deal history between utc_from and utc_to.

@@ -29,7 +29,7 @@ This will install:
 
 Open **config.py**:
 
-* Set `SYMBOL` to the instrument you want (e.g., `"EURUSD"`)
+* Set `SYMBOLS` to the instrument(s) you want (e.g., `"EURUSD"`)
 * Set `RISK_PER_TRADE` (0.01 = 1% risk, 0.02 = 2%)
 * Adjust `DAILY_DRAWDOWN_LIMIT` if you want stricter rules
 * Set SL_POINTS / TP_POINTS in points (5-digit broker → 200 points = 20 pips)

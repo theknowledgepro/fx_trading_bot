@@ -1,13 +1,13 @@
 import MetaTrader5 as mt5
-from config import DAILY_DRAWDOWN_LIMIT, RISK_PER_TRADE, SYMBOL, LOTS_MIN, LOTS_MAX
+from config import DAILY_DRAWDOWN_LIMIT, RISK_PER_TRADE, LOTS_MIN, LOTS_MAX, SL_POINTS
 from datetime import datetime, timedelta
 import pandas as pd
  
-def calc_lot_size(bot_mt5, sl_points: float, risk_percent: float = RISK_PER_TRADE) -> float:
+def calc_lot_size(bot_mt5, symbol, sl_points: float = SL_POINTS, risk_percent: float = RISK_PER_TRADE) -> float:
     balance = bot_mt5.safe_account_info().balance
     risk_amount = balance * risk_percent
 
-    symbol_info = bot_mt5.safe_symbol_info(SYMBOL)
+    symbol_info = bot_mt5.safe_symbol_info(symbol)
     point = symbol_info.point
 
     tick_value = symbol_info.trade_tick_value

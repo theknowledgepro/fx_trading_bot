@@ -1,7 +1,6 @@
 import pandas as pd
 from strategy_engine import generate_signal
 from market_engine import detect_market_regime
-from risk_manager import calc_lot_size
 
 def backtest(df: pd.DataFrame, sl_points: float, tp_points: float):
     """

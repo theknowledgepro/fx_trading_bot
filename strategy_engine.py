@@ -1,21 +1,21 @@
 import MetaTrader5 as mt5
 import pandas as pd
 from datetime import datetime, time as dt_time
-from config import SYMBOL, TIMEFRAME
+from config import TIMEFRAME
 from typing import TypedDict, Literal
 
 # This bot will only produce signals when market structure, displacement, and mitigation conditions are satisfied.
 # This is normal ICT behavior — there will be periods of no signal.
 # Make sure the get_candles() function fetches enough historical candles (≥100) so BOS and displacement detection works.
 
-def get_candles(bot_mt5, n=200) -> pd.DataFrame:
+def get_candles(bot_mt5, symbol, n=200) -> pd.DataFrame:
     """Fetch historical candles and return as DataFrame"""
-    df = bot_mt5.safe_candles(SYMBOL, TIMEFRAME, n)
+    df = bot_mt5.safe_candles(symbol, TIMEFRAME, n)
     # print(df.columns) # Check the DataFrame column names
     df['time'] = pd.to_datetime(df['time'], unit='s')
     return df
 
-def detect_bos(df: pd.DataFrame) -> str | None:
+def detect_bos(df: pd.DataFrame, symbol) -> str | None:
     """
     Detect Break of Structure (BOS)
     """
@@ -32,12 +32,12 @@ def detect_bos(df: pd.DataFrame) -> str | None:
     
     # Consider a BOS if high/low wick breaks the swing, even if close doesn’t
     # Check last 3 candles for wick or close break
-    print(f"{datetime.now()} → Checking last 3 candles for BOS → Prev high: {prev_high}, Prev low: {prev_low}")
+    print(f"{datetime.now()} [{symbol}] → Checking last 3 candles for BOS → Prev high: {prev_high}, Prev low: {prev_low}")
     for i in range(-3, 0):
         last_close = df['close'].iloc[i]
         last_high = highs.iloc[i]
         last_low = lows.iloc[i]
-        print(f"{datetime.now()} → Candle {i}: High={last_high}, Low={last_low}, Close={last_close}")
+        # print(f"{datetime.now()} [{symbol}] → Candle {i}: High={last_high}, Low={last_low}, Close={last_close}")
 
         if last_close > prev_high or last_high > prev_high:
             return 'BULLISH_BOS'
@@ -96,7 +96,7 @@ class Signal(TypedDict):
     direction: Literal['BUY', 'SELL']
     entry_type: Literal['MITIGATION', 'MOMENTUM']
 
-def generate_signal(df: pd.DataFrame, allow_momentum: bool = True) -> Signal | None:
+def generate_signal(df: pd.DataFrame, symbol, allow_momentum: bool = True) -> Signal | None:
     """
     TRUE ICT ENTRY MODEL
     Returns a dict with:
@@ -107,28 +107,28 @@ def generate_signal(df: pd.DataFrame, allow_momentum: bool = True) -> Signal | N
     - allow_momentum: whether to allow momentum entries (price outside OB/FVG)
     """
     if len(df) < 100:
-        print(f"{datetime.now()} → Not enough candles for signal")
+        print(f"{datetime.now()} [{symbol}] → Not enough candles for signal")
         return None
 
-    bos = detect_bos(df)
+    bos = detect_bos(df, symbol)
     if not bos:
-        print(f"{datetime.now()} → No BOS found")
+        print(f"{datetime.now()} [{symbol}] → No BOS found")
         return None
 
     disp_index = find_displacement(df)
     if disp_index is None:
-        print(f"{datetime.now()} → No displacement found")
+        print(f"{datetime.now()}  [{symbol}] → No displacement found")
         return None
 
     ob = find_order_block(df, disp_index, bos)
     fvg = find_fvg(df, disp_index, bos)
     last_price = df['close'].iloc[-1]
 
-    print(f"{datetime.now()} → BOS detected: {bos}")
-    print(f"{datetime.now()} → Displacement index: {disp_index}")
-    print(f"{datetime.now()} → Order block: {ob}")
-    print(f"{datetime.now()} → FVG: {fvg}")
-    print(f"{datetime.now()} → Last price: {last_price}")
+    print(f"{datetime.now()} [{symbol}] → BOS detected: {bos}")
+    print(f"{datetime.now()} [{symbol}] → Displacement index: {disp_index}")
+    print(f"{datetime.now()} [{symbol}] → Order block: {ob}")
+    print(f"{datetime.now()} [{symbol}] → FVG: {fvg}")
+    print(f"{datetime.now()} [{symbol}] → Last price: {last_price}")
 
      # --- Mitigation entry check ---
     if bos == 'BULLISH_BOS':
