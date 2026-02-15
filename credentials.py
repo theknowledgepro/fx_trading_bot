@@ -39,7 +39,7 @@ def generate_env_file():
     """
     One-click setup for MT5 credentials:
     - Generates secret.key if missing
-    - Encrypts login/password
+    - Encrypts login/password/alert email & password
     - Writes encrypted values and server to .env
     """
     print("=== MT5 Credentials Encryption & .env Setup ===\n")
@@ -54,10 +54,15 @@ def generate_env_file():
     login = input("Enter MT5 login: ")
     password = getpass("Enter MT5 password: ")
     server = input("Enter MT5 server: ")
+    alert_email = input("Enter alert email address: ")
+    alert_email_password = getpass("Enter alert email address password: ")
+    alert_to = input("Enter email alerts recipient email address: ")
 
     # ---- Step 3: Encrypt login & password ----
     enc_login = fernet.encrypt(login.encode()).decode()
     enc_password = fernet.encrypt(password.encode()).decode()
+    enc_alert_email = fernet.encrypt(alert_email.encode()).decode()
+    enc_alert_email_password = fernet.encrypt(alert_email_password.encode()).decode()
 
     # ---- Step 4: Write to .env ----
     env_path = Path(".env")
@@ -65,6 +70,9 @@ def generate_env_file():
         f"MT5_LOGIN_ENC={enc_login}\n"
         f"MT5_PASSWORD_ENC={enc_password}\n"
         f"MT5_SERVER={server}\n"
+        f"ALERT_EMAIL_ENC={enc_alert_email}\n"
+        f"ALERT_EMAIL_PASSWORD_ENC={enc_alert_email_password}\n"
+        f"ALERT_EMAIL_TO={alert_to}\n"
     )
     env_path.write_text(env_content)
     print("[+] .env file created with encrypted credentials!\n")

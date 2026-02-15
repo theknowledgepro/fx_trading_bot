@@ -11,7 +11,7 @@ import ta
 def in_kill_zone():
     est = timezone('US/Eastern')
     now = datetime.now(est).time()
-    # London Open 2AM-5AM, NY Open 7AM-10AM, London Close 10AM-12PM
+    # London Open 2AM-5AM (3AM-6AM NGN), NY Open 7AM-10AM (12PM-3PM NGN), London Close 10AM-12PM (11AM-1PM NGN)
     if (dt_time(2,0) <= now <= dt_time(5,0)) or \
        (dt_time(7,0) <= now <= dt_time(10,0)) or \
        (dt_time(10,0) <= now <= dt_time(12,0)):
@@ -158,7 +158,7 @@ def detect_bos(df: pd.DataFrame, symbol) -> str | None:
     
     # Consider a BOS if high/low wick breaks the swing, even if close doesn’t
     # Check last 3 candles for wick or close break
-    print(f"{datetime.now()} [{symbol}] → Checking last 3 candles for BOS → Prev high: {prev_high}, Prev low: {prev_low}")
+    print(f"\n{datetime.now()} [{symbol}] → Checking last 3 candles for BOS → Prev high: {prev_high}, Prev low: {prev_low}")
     for i in range(-3, 0):
         last_close = df['close'].iloc[i]
         last_high = highs.iloc[i]
@@ -243,7 +243,7 @@ def generate_signal(df: pd.DataFrame, symbol, allow_momentum: bool = True) -> Si
 
     bos = detect_bos(df, symbol)
     if not bos:
-        print(f"{datetime.now()} [{symbol}] → No BOS found")
+        # print(f"{datetime.now()} [{symbol}] → No BOS found")
         return None
 
     disp_index = find_displacement(df)

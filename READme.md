@@ -67,17 +67,3 @@ Bot started — running... (Ctrl+C to stop)
 * Open MT5 and **close open trades manually** if needed.
 
 ---
-
-## **6. Optional: Backtesting**
-
-You can test your strategy on historical data:
-
-```python
-from backtest import backtest
-import pandas as pd
-
-# Load historical CSV
-df = pd.read_csv("EURUSD_1H.csv")
-results = backtest(df)
-print(results)
-```

@@ -2,17 +2,6 @@
 # CONFIGURATION
 # -------------------------------
 import MetaTrader5 as mt5
-from credentials import decrypt_secret
-from dotenv import load_dotenv
-import os
-
-# Load the .env file
-load_dotenv()
-
-# Decrypt credentials
-MT5_LOGIN = decrypt_secret(os.getenv("MT5_LOGIN_ENC"))
-MT5_PASSWORD = decrypt_secret(os.getenv("MT5_PASSWORD_ENC"))
-MT5_SERVER = os.getenv("MT5_SERVER")
 
 SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"]
 

@@ -11,7 +11,7 @@ from logger import log_position_update
 from mt5 import ResilientMT5
 
 # ------------------ Initialize MT5 ------------------ #
-bot_mt5 = ResilientMT5(retry_interval=10, max_retries=5)
+bot_mt5 = ResilientMT5(path=None, retry_interval=10, max_retries=5)
 print("Bot started — running... (Ctrl+C to stop)")
 
 try:
@@ -80,22 +80,22 @@ try:
                         continue
 
                     # Filters before order
-                    if not trend_filter(df, signal_direction):
-                        print(f"{datetime.now()} [{symbol}] → Trend filter failed — skipping trade")
-                        continue
+                    # if not trend_filter(df, signal_direction):
+                    #     print(f"{datetime.now()} [{symbol}] → Trend filter failed — skipping trade")
+                    #     continue
 
-                    if not htf_trend_check(df_htf_h1, signal_direction):
-                        print(f"{datetime.now()} [{symbol}] → HTF H1 bias mismatch — signal: {signal_direction} skipped")
-                        continue
+                    # if not htf_trend_check(df_htf_h1, signal_direction):
+                    #     print(f"{datetime.now()} [{symbol}] → HTF H1 bias mismatch — signal: {signal_direction} skipped")
+                    #     continue
 
                     if not htf_trend_check(df_htf_h4, signal_direction):
                         print(f"{datetime.now()} [{symbol}] → HTF H4 bias mismatch — signal: {signal_direction} skipped")
                         continue
 
-                    ls_sweep = liquidity_sweep(df, session_candles=20, lookback_candles=5)
-                    if ls_sweep != signal_direction:
-                        print(f"{datetime.now()} [{symbol}] → Liquidity sweep failed — signal: {signal_direction} skipped")
-                        continue
+                    # ls_sweep = liquidity_sweep(df, session_candles=20, lookback_candles=5)
+                    # if ls_sweep != signal_direction:
+                    #     print(f"{datetime.now()} [{symbol}] → Liquidity sweep failed — signal: {signal_direction} skipped")
+                    #     continue
 
                     if signal['type'] == 'FVG' and not is_inverted_fvg(signal, df):
                         print(f"{datetime.now()} [{symbol}] → Waiting for IFVG confirmation — skipping trade")
@@ -103,7 +103,7 @@ try:
 
                     # Calculate ATR-based SL/TP
                     sl, tp = atr_sl_tp(df, signal_direction)
-                    lot = calc_lot_size(bot_mt5, symbol, sl, risk_pct=RISK_PER_TRADE)  # max 1% risk
+                    lot = calc_lot_size(bot_mt5, symbol, sl, risk_percent=RISK_PER_TRADE)  # max 1% risk
 
                     tick = bot_mt5.safe_tick(symbol)
 

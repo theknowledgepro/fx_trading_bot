@@ -3,3 +3,4 @@ __pycache__
 secret.key
 positions.csv
 trades.csv
+./logs

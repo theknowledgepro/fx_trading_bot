@@ -1,45 +1,45 @@
 import MetaTrader5 as mt5
 import time
 from datetime import datetime
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import pandas as pd
+from dotenv import load_dotenv
+from credentials import decrypt_secret
+from alerts import send_alert
+import os
 
-# ------------------ Alerting Config ------------------
-ALERT_EMAIL = "youremail@example.com"      # Client email
-ALERT_PASSWORD = "your-email-app-password" # Gmail/Outlook app password
-ALERT_TO = "client@example.com"            # Recipient email
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-
-# ------------------ Helper for sending email alerts ------------------
-def send_alert(subject: str, message: str):
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = ALERT_EMAIL
-        msg['To'] = ALERT_TO
-        msg['Subject'] = subject
-        msg.attach(MIMEText(message, 'plain'))
-
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(ALERT_EMAIL, ALERT_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        print(f"{datetime.now()} → Alert sent: {subject}")
-    except Exception as e:
-        print(f"{datetime.now()} → Failed to send alert: {e}")
+# Load the .env file
+load_dotenv()
 
 # ------------------ MT5 Resilient Wrapper ------------------
 class ResilientMT5:
-    def __init__(self, retry_interval=10, max_retries=5):
+    def __init__(self, path=None, retry_interval=10, max_retries=5):
         self.retry_interval = retry_interval
         self.max_retries = max_retries
 
-        if not mt5.initialize():
-            raise RuntimeError("MT5 initialization failed")
-        print(f"{datetime.now()} → Connected to MT5")
+        # --- Load encrypted values ---
+        login_enc = os.getenv("MT5_LOGIN_ENC")
+        password_enc = os.getenv("MT5_PASSWORD_ENC")
+        server = os.getenv("MT5_SERVER")
+
+        # --- Decrypt ---
+        login = decrypt_secret(login_enc)
+        password = decrypt_secret(password_enc)
+
+        if not login or not password:
+            raise Exception("Failed to decrypt MT5 credentials.")
+
+        login = int(login)
+
+        # --- Initialize MT5 ---
+        if not mt5.initialize(path):
+            raise Exception(f"Initialize failed: {mt5.last_error()}")
+
+        authorized = mt5.login(login, password=password, server=server)
+
+        if not authorized:
+            raise Exception(f"Login failed: {mt5.last_error()}")
+
+        print(f"{datetime.now()} → ✅ Connected to MT5 successfully")
 
     def safe_account_info(self) -> float:
         """Fetch account balance safely with retries and alerts"""
