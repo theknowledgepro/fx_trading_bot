@@ -17,27 +17,41 @@ class ResilientMT5:
         self.max_retries = max_retries
 
         # --- Load encrypted values ---
-        login_enc = os.getenv("MT5_LOGIN_ENC")
-        password_enc = os.getenv("MT5_PASSWORD_ENC")
-        server = os.getenv("MT5_SERVER")
+        login_enc = os.getenv("MT5_LOGIN_ENC", "").strip()
+        password_enc = os.getenv("MT5_PASSWORD_ENC", "").strip()
+        server = os.getenv("MT5_SERVER", "").strip()
 
         # --- Decrypt ---
         login = decrypt_secret(login_enc)
         password = decrypt_secret(password_enc)
-
+        
         if not login or not password:
             raise Exception("Failed to decrypt MT5 credentials.")
 
         login = int(login)
 
         # --- Initialize MT5 ---
-        if not mt5.initialize(path):
+        if path:
+            initialized = mt5.initialize(path)
+        else:
+            initialized = mt5.initialize()
+
+        if not initialized:
             raise Exception(f"Initialize failed: {mt5.last_error()}")
 
-        authorized = mt5.login(login, password=password, server=server)
+        if initialized:
+            time.sleep(1)  # wait 1 second to ensure MT5 API is ready
 
-        if not authorized:
-            raise Exception(f"Login failed: {mt5.last_error()}")
+            # Login with or without server
+            if not server:
+                print("[!] WARNING: MT5 server is empty. Login will likely fail for a fresh terminal.")
+            if server:
+                authorized = mt5.login(login, password=password, server=server)
+            else:
+                authorized = mt5.login(login, password)
+
+                if not authorized:
+                    raise Exception(f"Login failed: {mt5.last_error()}")
 
         print(f"{datetime.now()} → ✅ Connected to MT5 successfully")
 
